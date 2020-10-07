@@ -57,15 +57,16 @@ Hence we will ask a few questions that can be answered from this data
 
 `SELECT p.user_id, u.first_name, u.last_name, COUNT(p.user_id) FROM songplays AS p JOIN users AS u ON u.user_id = p.user_id GROUP BY 1, 2, 3 ORDER BY 4 DESC LIMIT 10;`
 
-user_id 	first_name 	last_name 	count
-49 	Chloe 	Cuevas 	689
-80 	Tegan 	Levine 	665
-97 	Kate 	Harrell 	557
-15 	Lily 	Koch 	463
-44 	Aleena 	Kirby 	397
-29 	Jacqueline 	Lynch 	346
-24 	Layla 	Griffin 	321
-73 	Jacob 	Klein 	289
-88 	Mohammad 	Rodriguez 	270
-36 	Matthew 	Jones 	248
+| user_id | first_name | last_name | count |
+|---------|------------|-----------|-------|
+|49 | Chloe | Cuevas | 689 |
+|80 | Tegan | Levine | 665 |
+|97 | Kate | Harrell | 557 | 
+|15 | Lily | Koch | 463 |
+|44 | Aleena | Kirby | 397 |
+|29 | Jacqueline | Lynch | 346 |
+|24 | Layla | Griffin | 321 |
+|73 | Jacob | Klein | 289 |
+|88 | Mohammad | Rodriguez | 270 |
+|36 | Matthew | Jones | 248 |
 
