@@ -44,6 +44,30 @@ The key facts that is contained in the data is the song play activity that is co
 + start_time, hour, day, week, month, year, weekday
 + 6813 records
 
+## Project Files
+
+### Python Scripts
+#### sql_queries.py
+This contains the actual SQL queries to create, drop, insert and select from tables. 
+
+#### create_table.py
+This file has to be run first always before any session so that the existing tables are dropped and new clean tables are created.
+
+#### etl.py
+This contains the ETL pipeline to read from all the json files, process them, and finally insert the records into the created tables.
+When this file is run, all the data is populated into the database.
+
+### Jupyter Notebooks
+#### test.ipynb
+This notebook contains a few test and debugging queries that can be used to check that the SQL statements are fine and the ETL pipeline is working fine
+
+#### etl.ipynb
+This notebook is the exploratory workbook that is used to analyse the data files and build out a sample ETL pipeline. Once we are happy with this, we can move the logic into a python script.
+
+#### analysis.ipynb
+Once all the data is inserted into the tables, we can use this notebook to run some sample queries and analysis.
+
+
 ## Data Analysis - sample questions
 
 ### Q: What were the top 10 most played songs?
@@ -57,15 +81,16 @@ Hence we will ask a few questions that can be answered from this data
 
 `SELECT p.user_id, u.first_name, u.last_name, COUNT(p.user_id) FROM songplays AS p JOIN users AS u ON u.user_id = p.user_id GROUP BY 1, 2, 3 ORDER BY 4 DESC LIMIT 10;`
 
-user_id 	first_name 	last_name 	count
-49 	Chloe 	Cuevas 	689
-80 	Tegan 	Levine 	665
-97 	Kate 	Harrell 	557
-15 	Lily 	Koch 	463
-44 	Aleena 	Kirby 	397
-29 	Jacqueline 	Lynch 	346
-24 	Layla 	Griffin 	321
-73 	Jacob 	Klein 	289
-88 	Mohammad 	Rodriguez 	270
-36 	Matthew 	Jones 	248
+| user_id | first_name | last_name | count |
+|---------|------------|-----------|-------|
+|49 | Chloe | Cuevas | 689 |
+|80 | Tegan | Levine | 665 |
+|97 | Kate | Harrell | 557 | 
+|15 | Lily | Koch | 463 |
+|44 | Aleena | Kirby | 397 |
+|29 | Jacqueline | Lynch | 346 |
+|24 | Layla | Griffin | 321 |
+|73 | Jacob | Klein | 289 |
+|88 | Mohammad | Rodriguez | 270 |
+|36 | Matthew | Jones | 248 |
 
