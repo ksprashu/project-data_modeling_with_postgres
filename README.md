@@ -23,26 +23,58 @@ The key facts that is contained in the data is the song play activity that is co
 ### Fact Table
 
 ### songplays
-+ songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
-+ 6820 records
++ columns: `songplay_id, start_time, user_id, song_id, artist_id, session_id, level, location, user_agent`
++ primary key: `songplay_id` - serial datatype
++ non nullable: `start_time, user_id`
+
+Every record should contain the time when it was played and who played it. Hence these two columns should be non nullable.
+Ideally the song_id (and hence artist_id) should be non-nullable since these are also important information to know what was played. However in this sample dataset we will not have this information, hence we will allow nulls so that we can do some alternate queries on the database to show the value of a star schema in RDBMS.
+It might also help to store the song name and title name for the records that weren't processed so that we could come back it to later on, however the song and artist data is expected to be processed completely at first, and only then the songplay log data will be processed. This will ensure that all songplays has an associated songid and artistid associated with it in the full dataset.
 
 ### Dimension Tables
 
 #### artists
-+ artist_id, name, location, latitude, longitude
-+ 69 records
++ columns: `artist_id, name, location, latitude, longitude`
++ primary key: `artist_id` 
++ non nullable: `name`
+
+It is expected that every artist has a name. Without this the information is not useful.
+
+Artist information is retrieved from the song records. Since we have a single file for each song, it means that there will be a repetition of artists across multiple song files. In order to handle this, we will DO NOTHING when inserting duplicates into the artist table.
 
 #### songs
-+ song_id, title, artist_id, year, duration
-+ 71 records
++ columns: `song_id, title, artist_id, year, duration`
++ primary key: `song_id`
++ non nullable: `title, artist_id`
+
+Every song should have a title and should be associated with an artist. This is the minimum expectation that is expected out of a clean dataset.
+It is also important that the song should have a duration and year, but this is metatdata and we'll not check for nullness of this data. Recording this as-is will give us the ability to check for bad data at a later stage and rectify.
 
 #### users
-+ user_id, first_name, last_name, gender, level
-+ 96 records 
++ columns: `user_id, first_name, last_name, gender, level, start_time`
++ primary key: `user_id`
++ non nullable: `first_name`
+
+At least the first name of the user should be available for data sanity reasons.
+We will also default the level to `free` in case the data was not found for any reason.
+We will also store the start_time with every record so that we can update with only newer records when there is a change in level.
+
+User records are retrieved from the logs. The users can be paid or free users. The user might have also changed their level status during a point of time. We'd like to store the record of what is the current level of the user in the users table. It would be good to also store the history of the users as an additional table in case we would like to known when a user changed their subscription.
 
 #### time
-+ start_time, hour, day, week, month, year, weekday
-+ 6813 records
++ columns: `start_time, hour, day, week, month, year, weekday`
++ primary key: `start_time`
+
+We need to have just a single record for every unique timestamp. Hence we will mark the start timestamp as a primary key.
+
+#### user_history
++ columns: `user_id, start_time, level`
++ primary key: `user_id, start_time`
++ non nullable: `start_time`
+
+This is an additional table that we are creating to record the history of users changing their subscription levels.
+
+**Note:** Currently a history record is being inserted whenever a new timestamp for the same user is found in a new file. This can be fixed by inserting a new record only when the level changes across log files. This is an improvement that can be taken up for later.
 
 ## Project Files
 

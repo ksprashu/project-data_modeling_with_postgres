@@ -7,6 +7,13 @@ from sql_queries import *
 
 
 def process_song_file(cur, filepath):
+    """ Extracts the song and artist information from the json file and inserts into the database
+    
+    Args:
+    cur: the cursor to the database
+    filepath: the path to the json file that contains the song data
+    """
+    
     # open song file
     df = pd.read_json(filepath, lines=True)
 
@@ -28,6 +35,13 @@ def process_song_file(cur, filepath):
 
 
 def process_log_file(cur, filepath):
+    """ Extracts the time, user and songplay information from the json file and inserts into the database
+    
+    Args:
+    cur: the cursor to the datbase
+    filepath: the path to the json file containing songplay records
+    """
+    
     # open log file
     df = pd.read_json(filepath, lines=True)
 
@@ -46,8 +60,8 @@ def process_log_file(cur, filepath):
         cur.execute(time_table_insert, list(row))
 
     # load user table
-    user_df = df.loc[:, ['userId', 'firstName', 'lastName', 'gender', 'level']]
-    user_df = user_df.drop_duplicates() # drop any duplicates
+    user_df = df.loc[:, ['userId', 'firstName', 'lastName', 'gender', 'level', 'ts']]
+    user_df = user_df.drop_duplicates(subset=['userId', 'level']) # drop any duplicates # drop any duplicates
 
     # insert user records
     try:
@@ -57,12 +71,13 @@ def process_log_file(cur, filepath):
         print('Error inserting user: ', row)
         print(e)
 
-    # get last songplay_id value
-    last_id = 0
-    cur.execute(select_max_songplay_id)
-    results = cur.fetchone()
-    if results and results[0] is not None:
-        last_id = results[0]
+    # insert user history records
+    try:
+        for i, row in user_df.iterrows():
+            cur.execute(user_history_table_insert, (row[0], row[5], row[4]))
+    except psycopg2.Error as e:
+        print('Error insert user history: ', row)
+        print(e)
         
     # insert songplay records
     for index, row in df.iterrows():
@@ -78,12 +93,25 @@ def process_log_file(cur, filepath):
             songid, artistid = None, None
 
         # insert songplay record
-        next_id = int(last_id) + index + 1
-        songplay_data = (next_id, row.ts, row.userId, row.level, songid, artistid, row.sessionId, row.location, row.userAgent)
+        songplay_data = (row.ts, row.userId, songid, artistid, row.sessionId, row.level, row.location, row.userAgent)
         cur.execute(songplay_table_insert, songplay_data)
 
 
 def process_data(cur, conn, filepath, func):
+    """ Processes all the files within the given directory for insertion into database
+    
+    This function will walk through the specified path and retrieve all the files that
+    are present in the directory tree. It will then call the specified callback function 
+    for every json file that is found in the directory tree.
+    
+    Args:
+    cur: the cursor to the database
+    conn: the database connection to be used
+    filepath: the root folder that contains all the necessary files to be processed
+    func: the callback function that will process the retrieved files
+    
+    """
+    
     # get all files matching extension from directory
     all_files = []
     for root, dirs, files in os.walk(filepath):
@@ -103,6 +131,9 @@ def process_data(cur, conn, filepath, func):
 
 
 def main():
+    """ The main function that is called when the program starts
+    """
+    
     conn = psycopg2.connect("host=127.0.0.1 dbname=sparkifydb user=student password=student")
     cur = conn.cursor()
 
